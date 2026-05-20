@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Fiber.Utilities
+namespace Base_Systems.Scripts.Utilities.SerializedScriptableObject.Editor
 {
 	/// <summary>
 	/// Extends how ScriptableObject object references are displayed in the inspector

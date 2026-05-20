@@ -3,7 +3,7 @@ using UnityEngine;
 
 // Use Example 1: [RangeStep(0f, 10f)] Vector2 minMax;
 // Use Example 2: [RangeStep(100, 1000)] Vector2Int minMax;
-namespace Fiber.Utilities
+namespace Base_Systems.Scripts.Utilities.Drawers
 {
 	public sealed class MinMax : PropertyAttribute
 	{

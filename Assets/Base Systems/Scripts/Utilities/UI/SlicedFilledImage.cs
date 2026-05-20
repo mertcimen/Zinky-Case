@@ -1,16 +1,14 @@
+#if UNITY_2017_4 || UNITY_2018_2_OR_NEWER
+#endif
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-#if UNITY_2017_4 || UNITY_2018_2_OR_NEWER
-using UnityEngine.U2D;
-#endif
-using Sprites = UnityEngine.Sprites;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
+using UnityEngine;
+using UnityEngine.U2D;
+using UnityEngine.UI;
+using Sprites = UnityEngine.Sprites;
 
-namespace Fiber.Utilities.UI
+namespace Base_Systems.Scripts.Utilities.UI
 {
 #if UNITY_EDITOR
 	// Custom Editor to order the variables in the Inspector similar to Image component

@@ -1,8 +1,6 @@
 <dependencies>
   <packages>
     <package>androidx.appcompat:appcompat:1.0.0</package>
-    <package>com.usercentrics.sdk:usercentrics-ui-unity:[2.24.1-unity]</package>
-    <package>org.jetbrains.kotlin:kotlin-stdlib-jdk8:[1.9.23]</package>
   </packages>
   <files>
     <file>Assets/Plugins/Android/com.amplitude.analytics-connector-1.0.0.aar</file>

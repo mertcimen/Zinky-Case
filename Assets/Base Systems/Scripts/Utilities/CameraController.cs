@@ -1,6 +1,5 @@
 using Base_Systems.Scripts.Utilities.Singletons;
 using Cinemachine;
-using Fiber.Utilities;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Rendering;

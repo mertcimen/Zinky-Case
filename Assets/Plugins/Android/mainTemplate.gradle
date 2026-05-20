@@ -5,8 +5,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 // Android Resolver Dependencies Start
     implementation 'androidx.appcompat:appcompat:1.0.0' // Assets/Helpshift/Editor/HelpshiftDependencies.xml:6
-    implementation 'com.usercentrics.sdk:usercentrics-ui-unity:[2.24.1-unity]' // Assets/Usercentrics/Editor/UsercentricsDependencies.xml:4
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:[1.9.23]' // Assets/Usercentrics/Editor/UsercentricsDependencies.xml:3
 // Android Resolver Dependencies End
 **DEPS**}
 

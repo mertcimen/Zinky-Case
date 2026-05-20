@@ -1,5 +1,4 @@
 using Base_Systems.Scripts.Utilities;
-using Fiber.Utilities;
 using UnityEngine;
 
 namespace Base_Systems.CurrencySystem.Scripts

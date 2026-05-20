@@ -1,6 +1,5 @@
 using Base_Systems.Scripts.Utilities.Singletons;
 using DG.Tweening;
-using Fiber.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;

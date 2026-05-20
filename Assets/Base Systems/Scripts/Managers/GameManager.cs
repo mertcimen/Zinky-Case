@@ -1,5 +1,4 @@
 using Base_Systems.Scripts.Utilities.Singletons;
-using Fiber.Utilities;
 using UnityEngine;
 
 namespace Base_Systems.Scripts.Managers

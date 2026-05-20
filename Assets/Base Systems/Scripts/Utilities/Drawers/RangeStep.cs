@@ -5,7 +5,7 @@ using UnityEngine;
 
 // Use Example 1: [RangeStep(0f, 10f, 0.25f)]
 // Use Example 2: [RangeStep(100, 1000, 25)]
-namespace Fiber.Utilities
+namespace Base_Systems.Scripts.Utilities.Drawers
 {
 	[AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
 	public sealed class RangeStep : PropertyAttribute

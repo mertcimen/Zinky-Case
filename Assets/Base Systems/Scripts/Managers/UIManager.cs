@@ -1,6 +1,5 @@
 using Base_Systems.Scripts.Utilities.Singletons;
 using Fiber.UI;
-using Fiber.Utilities;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;

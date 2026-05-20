@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Fiber.Utilities.Extensions
+namespace Base_Systems.Scripts.Utilities.Extensions
 {
 	public static class RigidbodyExtensions
 	{
