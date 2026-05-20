@@ -313,7 +313,6 @@ namespace Base_Systems.Scripts.Managers
 		{
 			CurrentLevel.Play();
 			OnLevelStart?.Invoke();
-			EnableHardOrExtremeLevelAnimation();
 		}
 
 #if UNITY_EDITOR
@@ -398,48 +397,11 @@ namespace Base_Systems.Scripts.Managers
 			OnLevelLose?.Invoke();
 		}
 
-		public void StartHardLevelAnimation()
-		{
-			GameObject hardLevelCanvas = ReferenceManagerSO.Instance.HardLevelCanvas;
-			hardLevelCanvas.SetActive(true);
-			hardLevelCanvas.GetComponent<Animator>().Play("Empty", 0, 0f);
-
-			DOVirtual.DelayedCall(2.5f, () =>
-			{
-				hardLevelCanvas.GetComponent<CanvasGroup>().DOFade(0f, 0.5f).onComplete = () =>
-				{
-					hardLevelCanvas.SetActive(false);
-				};
-			});
-		}
-
-		public void StartExtremeLevelAnimation()
-		{
-			GameObject extremeLevelCanvas = ReferenceManagerSO.Instance.ExtremeLevelCanvas;
-			extremeLevelCanvas.SetActive(true);
-			extremeLevelCanvas.GetComponent<Animator>().Play("Empty", 0, 0f);
-
-			DOVirtual.DelayedCall(2.5f, () =>
-			{
-				extremeLevelCanvas.GetComponent<CanvasGroup>().DOFade(0f, 0.5f).onComplete = () =>
-				{
-					extremeLevelCanvas.SetActive(false);
-				};
-			});
-		}
-
+		
+		
 		public void EnableHardOrExtremeLevelAnimation()
 		{
-			if (CurrentLevel.IsLevelHard)
-			{
-				StartHardLevelAnimation();
-				//PlayerPrefs.SetInt(LevelNo.ToString(), 1);
-			}
-			else if (CurrentLevel.IsLevelExtreme)
-			{
-				StartExtremeLevelAnimation();
-				//PlayerPrefs.SetInt(LevelNo.ToString(), 1);
-			}
+			
 		}
 
 #if UNITY_EDITOR

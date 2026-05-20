@@ -1,30 +1,22 @@
 using _Main.Scripts.Datas;
-using _Main.Scripts.GamePlay;
-using Sirenix.OdinInspector;
+using _Main.Scripts.GridSystem;
 using UnityEngine;
 
 namespace Fiber.LevelSystem
 {
 	public class Level : MonoBehaviour
 	{
-		[SerializeField, InlineEditor]
-		private LevelPrefabDataSO levelData;
-		
-		public LevelPrefabDataSO LevelData => levelData;
-		
-		public bool IsLevelHard => levelData.LevelHardness == LevelHardness._1Hard;
-		public bool IsLevelExtreme => levelData.LevelHardness == LevelHardness._2Extreme;
+		[SerializeField] private LevelDataSO levelDataSO;
+		[SerializeField] private GridManager gridManager;
 
 		public virtual void Load()
 		{
 			gameObject.SetActive(true);
-			// TimeManager.Instance.Initialize(46);
+			gridManager.Initialize(levelDataSO);
 		}
 
 		public virtual void Play()
 		{
 		}
-
-		
 	}
 }

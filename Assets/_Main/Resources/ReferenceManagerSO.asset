@@ -12,5 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3cffcd1195ee4a978be24af40553d7a, type: 3}
   m_Name: ReferenceManagerSO
   m_EditorClassIdentifier: 
-  hardLevelCanvas: {fileID: 4833045208120607057, guid: 431beba2df749de4197f2bcfa16bca63, type: 3}
-  extremeLevelCanvas: {fileID: 5599130655800701084, guid: 1fdfd87397912fc4e967cd6f2708131d, type: 3}
+  gridCellPrefab: {fileID: 7968862065934212307, guid: b9bb4f510fa5d441480c7e154e4c676c, type: 3}
