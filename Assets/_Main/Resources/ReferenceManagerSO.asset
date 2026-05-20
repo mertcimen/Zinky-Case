@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3cffcd1195ee4a978be24af40553d7a, type: 3}
+  m_Name: ReferenceManagerSO
+  m_EditorClassIdentifier: 
+  hardLevelCanvas: {fileID: 4833045208120607057, guid: 431beba2df749de4197f2bcfa16bca63, type: 3}
+  extremeLevelCanvas: {fileID: 5599130655800701084, guid: 1fdfd87397912fc4e967cd6f2708131d, type: 3}
