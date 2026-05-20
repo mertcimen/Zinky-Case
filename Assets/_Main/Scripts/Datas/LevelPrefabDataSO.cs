@@ -1,7 +1,8 @@
+using Fiber.LevelSystem;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-namespace Fiber.LevelSystem
+namespace _Main.Scripts.Datas
 {
 	public class LevelPrefabDataSO : ScriptableObject
 	{

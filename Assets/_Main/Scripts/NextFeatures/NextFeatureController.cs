@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using _Main.Scripts.Datas;
-using _Main.Scripts.LevelConfig;
 using Base_Systems.Scripts.Managers;
 using DG.Tweening;
 using Fiber.UI;

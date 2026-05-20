@@ -235,7 +235,6 @@ Transform:
   - {fileID: 2089823345}
   - {fileID: 1277690885}
   - {fileID: 1311011122}
-  - {fileID: 839944797}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &205943722
@@ -711,53 +710,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 806192728}
   m_CullTransparentMesh: 1
---- !u!1 &839944796
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 839944797}
-  - component: {fileID: 839944798}
-  m_Layer: 0
-  m_Name: LevelConfigManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &839944797
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 839944796}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 158081445}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &839944798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 839944796}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f487eae637d40f998bedbce675c3a50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isActiveSystem: 1
-  useFakeData: 0
-  fakeJsonString: '{"playOrder":[2,5,6,7,4,3,1],"loopingLevels":[1,2,3,4,5,6,7]}'
 --- !u!114 &887650352 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6497585722530493702, guid: 49b9a7e468bc242e497718774f9001c4, type: 3}

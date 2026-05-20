@@ -1,3 +1,4 @@
+using _Main.Scripts.Datas;
 using _Main.Scripts.GamePlay;
 using Sirenix.OdinInspector;
 using UnityEngine;

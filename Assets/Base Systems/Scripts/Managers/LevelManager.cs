@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using _Main.Scripts.Data;
-using _Main.Scripts.LevelConfig;
 using _Main.Scripts.Utilities;
 using Base_Systems.AudioSystem.Scripts;
 using Base_Systems.Scripts.Utilities;
@@ -35,14 +34,8 @@ namespace Base_Systems.Scripts.Managers
 		private const string LAST_KNOWN_LEVEL_COUNT_KEY = "LastKnownLevelCount";
 		private const string PENDING_NEW_LEVELS_KEY = "PendingNewLevels";
 
-		private const string LAST_KNOWN_PLAYORDER_COUNT_KEY = "LastKnownPlayOrderCount";
-		private const string PENDING_REMOTE_LEVELS_KEY = "PendingRemoteLevels";
-
 		// [ReadOnly, SerializeField]
 		private List<int> pendingNewLevelIndices = new();
-
-		// [ReadOnly, SerializeField]
-		private List<int> pendingRemoteLevelIndices = new();
 
 		private int realLevelNo;
 
@@ -91,8 +84,6 @@ namespace Base_Systems.Scripts.Managers
 			LoadPendingNewLevels();
 			UpdatePendingNewLevelsIfNeeded();
 
-			LoadPendingRemoteLevels();
-
 			LoadLoopingLevels();
 			SanitizeLoopingList(levelsSO.Levels.Count);
 			LoadCurrentLevel(true);
@@ -104,9 +95,6 @@ namespace Base_Systems.Scripts.Managers
 			int totalLevels = levelsSO.Levels.Count;
 			int requestedLevelIndex = LevelNo - 1;
 			realLevelNo = LevelNo;
-
-			var playOrder = LevelConfigManager.Instance.GetPlayOrder;
-			UpdatePendingRemoteFromPlayOrder(playOrder, totalLevels);
 
 			if (pendingNewLevelIndices.Count > 0 && requestedLevelIndex >= totalLevels)
 			{
@@ -128,57 +116,18 @@ namespace Base_Systems.Scripts.Managers
 				SavePendingNewLevels();
 			}
 
-			if (pendingRemoteLevelIndices.Count > 0)
-			{
-				int pendingRemote = pendingRemoteLevelIndices[0];
+			bool fallbackToLoop = requestedLevelIndex >= totalLevels;
 
-				if (pendingRemote >= 0 && pendingRemote < totalLevels)
-				{
-					currentLevelIndex = pendingRemote;
-					pendingRemoteLevelIndices.RemoveAt(0);
-					SavePendingRemoteLevels();
-					if (enableLevelDebugLogs)
-						Debug.Log($"[LEVEL] Pending remote playOrder level played -> Index:{currentLevelIndex} LevelNo:{LevelNo}");
-					LoadLevel(currentLevelIndex);
-					SaveLoopingLevels();
-					return;
-				}
-
-				pendingRemoteLevelIndices.RemoveAt(0);
-				SavePendingRemoteLevels();
-			}
-
-			bool fallbackToLoop = false;
-
-			if (playOrder.Count != 0 && requestedLevelIndex < playOrder.Count)
-			{
-				int remoteIndex = playOrder[LevelNo - 1] - 1;
-				if (remoteIndex < 0 || remoteIndex >= totalLevels)
-				{
-					fallbackToLoop = true;
-					if (enableLevelDebugLogs)
-						Debug.Log($"[LEVEL] Remote index invalid -> Fallback to loop | Remote:{remoteIndex} Total:{totalLevels}");
-				}
-				else
-				{
-					currentLevelIndex = remoteIndex;
-					realLevelNo = requestedLevelIndex;
-					if (enableLevelDebugLogs)
-						Debug.Log($"[LEVEL] Remote level played -> Index:{currentLevelIndex} LevelNo:{LevelNo}");
-				}
-			}
-			else if (playOrder.Count == 0 && requestedLevelIndex < totalLevels)
+			if (!fallbackToLoop)
 			{
 				currentLevelIndex = requestedLevelIndex;
 				realLevelNo = requestedLevelIndex;
 				if (enableLevelDebugLogs)
 					Debug.Log($"[LEVEL] Normal level played -> Index:{currentLevelIndex} LevelNo:{LevelNo}");
 			}
-			else
+			else if (enableLevelDebugLogs)
 			{
-				fallbackToLoop = true;
-				if (enableLevelDebugLogs)
-					Debug.Log($"[LEVEL] No valid remote/local -> Fallback to loop | LevelNo:{LevelNo}");
+				Debug.Log($"[LEVEL] No valid local level -> Fallback to loop | LevelNo:{LevelNo}");
 			}
 
 			if (fallbackToLoop)
@@ -223,55 +172,6 @@ namespace Base_Systems.Scripts.Managers
 			SaveLoopingLevels();
 		}
 
-		private void UpdatePendingRemoteFromPlayOrder(List<int> playOrder, int totalLevels)
-		{
-			if (playOrder == null || playOrder.Count == 0) return;
-
-			int lastKnown = PlayerPrefs.GetInt(LAST_KNOWN_PLAYORDER_COUNT_KEY, playOrder.Count);
-
-			if (playOrder.Count > lastKnown)
-			{
-				for (int i = lastKnown; i < playOrder.Count; i++)
-				{
-					int idx = playOrder[i] - 1;
-					if (idx >= 0 && idx < totalLevels && !pendingRemoteLevelIndices.Contains(idx))
-						pendingRemoteLevelIndices.Add(idx);
-				}
-
-				SavePendingRemoteLevels();
-
-				if (enableLevelDebugLogs && pendingRemoteLevelIndices.Count > 0)
-					Debug.Log($"[LEVEL] Remote playOrder expanded -> PendingRemote [{string.Join(",", pendingRemoteLevelIndices)}]");
-			}
-
-			PlayerPrefs.SetInt(LAST_KNOWN_PLAYORDER_COUNT_KEY, playOrder.Count);
-			PlayerPrefs.Save();
-		}
-
-		private void SavePendingRemoteLevels()
-		{
-			PlayerPrefs.SetString(PENDING_REMOTE_LEVELS_KEY, string.Join(",", pendingRemoteLevelIndices));
-			PlayerPrefs.Save();
-		}
-
-		private void LoadPendingRemoteLevels()
-		{
-			pendingRemoteLevelIndices.Clear();
-			string data = PlayerPrefs.GetString(PENDING_REMOTE_LEVELS_KEY, "");
-			if (!string.IsNullOrEmpty(data))
-			{
-				var values = data.Split(',');
-				foreach (var v in values)
-				{
-					if (int.TryParse(v, out int index))
-						pendingRemoteLevelIndices.Add(index);
-				}
-			}
-
-			if (enableLevelDebugLogs && pendingRemoteLevelIndices.Count > 0)
-				Debug.Log($"[LEVEL] Pending remote levels loaded -> [{string.Join(",", pendingRemoteLevelIndices)}]");
-		}
-
 		private void SanitizeLoopingList(int totalLevels)
 		{
 			if (loopingLevelIndices == null) return;
@@ -290,28 +190,13 @@ namespace Base_Systems.Scripts.Managers
 		private void PopulateLoopingLevelIndices()
 		{
 			loopingLevelIndices.Clear();
-			var loopingLevels = LevelConfigManager.Instance.GetLoopingLevels;
-			if (loopingLevels.Count == 0)
+			for (int i = 0; i < levelsSO.Levels.Count; i++)
 			{
-				for (int i = 0; i < levelsSO.Levels.Count; i++)
-				{
-					if (i == 0 && currentLevelIndex != 0 && currentLevelIndex == i)
-						continue;
+				if (i == 0 && currentLevelIndex != 0 && currentLevelIndex == i)
+					continue;
 
-					if (levelsSO.Levels[i].IsLoopingLevel)
-						loopingLevelIndices.Add(i);
-				}
-			}
-			else
-			{
-				for (int i = 0; i < loopingLevels.Count; i++)
-				{
-					int idx = loopingLevels[i] - 1;
-					if (i == 0 && currentLevelIndex != 0 && currentLevelIndex == idx)
-						continue;
-					if (idx >= 0 && idx < levelsSO.Levels.Count)
-						loopingLevelIndices.Add(idx);
-				}
+				if (levelsSO.Levels[i].IsLoopingLevel)
+					loopingLevelIndices.Add(i);
 			}
 
 			loopingLevelIndices.Shuffle();
