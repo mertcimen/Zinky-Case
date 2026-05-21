@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using _Main.Scripts.BallSystem;
 using _Main.Scripts.GridSystem;
 using UnityEngine;
 
@@ -23,6 +24,7 @@ public class ReferenceManagerSO : ScriptableObject
 	#endregion
 
 	[SerializeField] private GridCell gridCellPrefab;
-
+	[SerializeField] private BallController ballControllerPrefab;
 	public GridCell GridCellPrefab => gridCellPrefab;
+	public BallController BallControllerPrefab => ballControllerPrefab;
 }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using _Main.Scripts.BallSystem;
+using _Main.Scripts.Containers;
 using _Main.Scripts.Datas;
 using UnityEngine;
 
@@ -11,8 +13,13 @@ namespace _Main.Scripts.GridSystem
 		[SerializeField] private float cellSize = DEFAULT_CELL_SIZE;
 
 		private readonly List<GridCell> gridCells = new();
+		private readonly Dictionary<Vector2Int, GridCell> gridCellLookup = new();
+		private int columnCount;
+		private int rowCount;
 
 		public IReadOnlyList<GridCell> GridCells => gridCells;
+		public int ColumnCount => columnCount;
+		public int RowCount => rowCount;
 
 		public void Initialize(LevelDataSO levelDataSO)
 		{
@@ -20,8 +27,8 @@ namespace _Main.Scripts.GridSystem
 
 			levelDataSO.EnsureGridData();
 
-			int columnCount = levelDataSO.ColumnCount;
-			int rowCount = levelDataSO.RowCount;
+			columnCount = levelDataSO.ColumnCount;
+			rowCount = levelDataSO.RowCount;
 
 			float xCenterOffset = (columnCount - 1) * 0.5f;
 			float yCenterOffset = (rowCount - 1) * 0.5f;
@@ -38,7 +45,13 @@ namespace _Main.Scripts.GridSystem
 						0f
 					);
 					gridCell.transform.localPosition = localPosition;
-					gridCell.Initialize(coordinates, levelDataSO.GetCellColor(row, column));
+					gridCell.Initialize(coordinates);
+					gridCellLookup.Add(coordinates, gridCell);
+
+					ColorType ballColorType = levelDataSO.GetCellColor(row, column);
+					if (ballColorType != ColorType.None)
+						CreateBall(gridCell, ballColorType);
+
 					gridCells.Add(gridCell);
 				}
 			}
@@ -52,12 +65,45 @@ namespace _Main.Scripts.GridSystem
 			return gridCell;
 		}
 
+		public bool IsInsideGrid(Vector2Int coordinates)
+		{
+			return coordinates.x >= 0 &&
+				coordinates.x < columnCount &&
+				coordinates.y >= 0 &&
+				coordinates.y < rowCount;
+		}
+
+		public bool TryGetGridCell(Vector2Int coordinates, out GridCell gridCell)
+		{
+			return gridCellLookup.TryGetValue(coordinates, out gridCell);
+		}
+
+		public bool HasBallAt(Vector2Int coordinates)
+		{
+			if (!TryGetGridCell(coordinates, out GridCell gridCell))
+				return false;
+
+			return gridCell.GetComponentInChildren<BallController>() != null;
+		}
+
+		private BallController CreateBall(GridCell gridCell, ColorType colorType)
+		{
+			BallController ballController = Instantiate(ReferenceManagerSO.Instance.BallControllerPrefab);
+			ballController.transform.SetParent(gridCell.transform, false);
+			ballController.transform.localPosition = Vector3.zero;
+			ballController.Initialize(colorType, gridCell);
+			return ballController;
+		}
+
 		private void ClearGrid()
 		{
 			for (int i = transform.childCount - 1; i >= 0; i--)
 				Destroy(transform.GetChild(i).gameObject);
 
 			gridCells.Clear();
+			gridCellLookup.Clear();
+			columnCount = 0;
+			rowCount = 0;
 		}
 	}
 }

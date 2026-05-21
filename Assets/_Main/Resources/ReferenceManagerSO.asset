@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: ReferenceManagerSO
   m_EditorClassIdentifier: 
   gridCellPrefab: {fileID: 7968862065934212307, guid: b9bb4f510fa5d441480c7e154e4c676c, type: 3}
+  ballControllerPrefab: {fileID: 2433566090241092510, guid: a88ad55b08c20466d87f3bc24735cf06, type: 3}

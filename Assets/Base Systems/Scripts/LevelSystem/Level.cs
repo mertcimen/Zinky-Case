@@ -1,4 +1,5 @@
 using _Main.Scripts.Datas;
+using _Main.Scripts.GamePlay;
 using _Main.Scripts.GridSystem;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ namespace Fiber.LevelSystem
 		{
 			gameObject.SetActive(true);
 			gridManager.Initialize(levelDataSO);
+			InputController.Instance.SetGridManager(gridManager);
 		}
 
 		public virtual void Play()
