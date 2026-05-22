@@ -10,17 +10,21 @@ namespace _Main.Scripts.Datas
 		private const int DEFAULT_COLUMN_COUNT = 5;
 		private const int DEFAULT_ROW_COUNT = 4;
 		private const int MIN_GRID_SIZE = 1;
+		private const int MIN_ROPE_COUNT = 1;
 
 		[SerializeField] private int columnCount = DEFAULT_COLUMN_COUNT;
 		[SerializeField] private int rowCount = DEFAULT_ROW_COUNT;
 		[SerializeField] private List<ColorType> cellColors = new();
+		[SerializeField] private List<RopeLevelData> ropeDatas = new();
 
 		public int ColumnCount => columnCount;
 		public int RowCount => rowCount;
+		public int RopeCount => ropeDatas.Count;
 
 		private void OnValidate()
 		{
 			EnsureGridData();
+			EnsureRopeData();
 		}
 
 		public void SetGridSize(int columns, int rows)
@@ -50,6 +54,20 @@ namespace _Main.Scripts.Datas
 
 			cellColors[index] = colorType;
 			return true;
+		}
+
+		public int GetInitialBallCount()
+		{
+			EnsureGridData();
+
+			int ballCount = 0;
+			for (int i = 0; i < cellColors.Count; i++)
+			{
+				if (cellColors[i] != ColorType.None)
+					ballCount++;
+			}
+
+			return ballCount;
 		}
 
 		public bool EnsureGridData()
@@ -88,6 +106,66 @@ namespace _Main.Scripts.Datas
 			{
 				cellColors.RemoveRange(targetCount, cellColors.Count - targetCount);
 				isChanged = true;
+			}
+
+			return isChanged;
+		}
+
+		public void SetRopeCount(int ropeCount)
+		{
+			int clampedRopeCount = Mathf.Max(MIN_ROPE_COUNT, ropeCount);
+			EnsureRopeData();
+
+			while (ropeDatas.Count < clampedRopeCount)
+				ropeDatas.Add(new RopeLevelData());
+
+			if (ropeDatas.Count > clampedRopeCount)
+				ropeDatas.RemoveRange(clampedRopeCount, ropeDatas.Count - clampedRopeCount);
+		}
+
+		public int GetRopeCapacity(int ropeIndex)
+		{
+			if (ropeIndex < 0 || ropeIndex >= ropeDatas.Count)
+				return 1;
+
+			return ropeDatas[ropeIndex].MaxCapacity;
+		}
+
+		public bool SetRopeCapacity(int ropeIndex, int capacity)
+		{
+			if (ropeIndex < 0 || ropeIndex >= ropeDatas.Count)
+				return false;
+
+			return ropeDatas[ropeIndex].SetMaxCapacity(capacity);
+		}
+
+		public bool EnsureRopeData()
+		{
+			bool isChanged = false;
+
+			if (ropeDatas == null)
+			{
+				ropeDatas = new List<RopeLevelData>();
+				isChanged = true;
+			}
+
+			while (ropeDatas.Count < MIN_ROPE_COUNT)
+			{
+				ropeDatas.Add(new RopeLevelData());
+				isChanged = true;
+			}
+
+			for (int i = 0; i < ropeDatas.Count; i++)
+			{
+				if (ropeDatas[i] == null)
+				{
+					ropeDatas[i] = new RopeLevelData();
+					isChanged = true;
+					continue;
+				}
+
+				if (ropeDatas[i].EnsureData())
+					isChanged = true;
 			}
 
 			return isChanged;

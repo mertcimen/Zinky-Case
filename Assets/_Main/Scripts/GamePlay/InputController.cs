@@ -1,4 +1,4 @@
-using _Main.Scripts.BallSystem;
+using System;
 using _Main.Scripts.GridSystem;
 using Base_Systems.Scripts.Managers;
 using Base_Systems.Scripts.Utilities.Singletons;
@@ -10,13 +10,23 @@ namespace _Main.Scripts.GamePlay
 	public class InputController : SingletonPersistent<InputController>
 	{
 		private const float DefaultRayDistance = 100f;
+		private const int DefaultRaycastHitBufferSize = 16;
 
 		[SerializeField] private LayerMask selectableLayerMask = Physics.DefaultRaycastLayers;
 		[SerializeField] private float rayDistance = DefaultRayDistance;
+		[SerializeField] private int raycastHitBufferSize = DefaultRaycastHitBufferSize;
 
 		private GridManager activeGridManager;
+		private RaycastHit[] raycastHitsBuffer;
+		private Camera mainCamera;
+		public GridManager ActiveGridManager => activeGridManager;
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private void Start()
+		{
+			mainCamera = Camera.main;
+		}
+
 		private static void CreateControllerIfMissing()
 		{
 			if (Instance != null)
@@ -29,6 +39,7 @@ namespace _Main.Scripts.GamePlay
 		private void OnEnable()
 		{
 			LevelManager.OnLevelUnload += ClearGridManager;
+			EnsureRaycastHitBuffer();
 		}
 
 		private void OnDisable()
@@ -49,14 +60,10 @@ namespace _Main.Scripts.GamePlay
 			if (IsPointerOverUI())
 				return;
 
-			BallController selectedBall = TryGetSelectedBall();
-			if (selectedBall == null)
+			if (!TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext))
 				return;
 
-			if (!BallPathChecker.CanReachBottom(activeGridManager, selectedBall))
-				return;
-
-			selectedBall.TriggerFallSequence();
+			tapInteractable.HandleTap(tapInputContext);
 		}
 
 		private static bool IsSelectionInputStarted()
@@ -81,26 +88,63 @@ namespace _Main.Scripts.GamePlay
 			return EventSystem.current.IsPointerOverGameObject();
 		}
 
-		private BallController TryGetSelectedBall()
+		private bool TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext)
 		{
-			Camera mainCamera = Camera.main;
-			if (mainCamera == null)
-				return null;
+			tapInteractable = null;
+			tapInputContext = default;
 
-			Vector3 screenPosition = Input.touchCount > 0
-				? (Vector3)Input.GetTouch(0).position
-				: Input.mousePosition;
+			if (mainCamera == null)
+				return false;
+
+			Vector3 screenPosition = Input.touchCount > 0 ? (Vector3)Input.GetTouch(0).position : Input.mousePosition;
+			bool isTouchInput = Input.touchCount > 0;
 
 			Ray ray = mainCamera.ScreenPointToRay(screenPosition);
-			if (!Physics.Raycast(ray, out RaycastHit hit, rayDistance, selectableLayerMask))
-				return null;
+			EnsureRaycastHitBuffer();
+			int hitCount = Physics.RaycastNonAlloc(ray, raycastHitsBuffer, rayDistance, selectableLayerMask);
+			if (hitCount <= 0)
+				return false;
 
-			return hit.collider.GetComponentInParent<BallController>();
+			float closestDistance = float.MaxValue;
+			for (int i = 0; i < hitCount; i++)
+			{
+				RaycastHit hit = raycastHitsBuffer[i];
+				Collider hitCollider = hit.collider;
+				if (hitCollider == null)
+					continue;
+
+				ITapInteractable candidateTapInteractable = hitCollider.GetComponentInParent<ITapInteractable>();
+				if (candidateTapInteractable == null)
+					continue;
+
+				TapInputContext candidateContext =
+					new TapInputContext(this, mainCamera, screenPosition, ray, hit, isTouchInput);
+				if (!candidateTapInteractable.CanHandleTap(candidateContext))
+					continue;
+
+				if (hit.distance >= closestDistance)
+					continue;
+
+				closestDistance = hit.distance;
+				tapInteractable = candidateTapInteractable;
+				tapInputContext = candidateContext;
+			}
+
+			return tapInteractable != null;
 		}
 
 		private void ClearGridManager()
 		{
 			activeGridManager = null;
+		}
+
+		private void EnsureRaycastHitBuffer()
+		{
+			int clampedBufferSize = Mathf.Max(1, raycastHitBufferSize);
+			if (raycastHitsBuffer != null && raycastHitsBuffer.Length == clampedBufferSize)
+				return;
+
+			raycastHitsBuffer = new RaycastHit[clampedBufferSize];
 		}
 	}
 }

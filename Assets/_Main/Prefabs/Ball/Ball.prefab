@@ -83,6 +83,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 3684446495663521958}
+  collider: {fileID: 1775728135524774533}
   ballRendererController: {fileID: 2133847347842230983}
 --- !u!54 &3684446495663521958
 Rigidbody:
@@ -144,6 +145,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0b906c66a20457b8a60412ec253205b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  renderer: {fileID: 6072892024720341959}
 --- !u!114 &6347357643707911533
 MonoBehaviour:
   m_ObjectHideFlags: 0

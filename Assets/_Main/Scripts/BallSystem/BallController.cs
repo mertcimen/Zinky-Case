@@ -1,5 +1,6 @@
 using System.Collections;
 using _Main.Scripts.Containers;
+using _Main.Scripts.GamePlay;
 using _Main.Scripts.GridSystem;
 using Base_Systems.Scripts.Managers;
 using DG.Tweening;
@@ -9,10 +10,11 @@ namespace _Main.Scripts.BallSystem
 {
 	[RequireComponent(typeof(Rigidbody))]
 	[RequireComponent(typeof(BallRendererController))]
-	public class BallController : MonoBehaviour
+	public class BallController : MonoBehaviour, ITapInteractable
 	{
 		[Header("Components")]
 		[SerializeField] private Rigidbody rb;
+		[SerializeField] private Collider collider;
 		[SerializeField] private BallRendererController ballRendererController;
 
 		private const RigidbodyConstraints InitialConstraints = RigidbodyConstraints.FreezePositionX |
@@ -29,6 +31,7 @@ namespace _Main.Scripts.BallSystem
 		public ColorType ColorType => colorType;
 		public GridCell GridCell => gridCell;
 		public bool IsInFreeFall => isInFreeFall;
+		public Rigidbody Rigidbody => rb;
 
 		public void Initialize(ColorType colorType, GridCell ownerGridCell)
 		{
@@ -40,15 +43,36 @@ namespace _Main.Scripts.BallSystem
 				}
 			}
 
-			ballRendererController.Initialize(ColorType);
 			SetColorType(colorType);
+			ballRendererController.Initialize(ColorType);
 			gridCell = ownerGridCell;
 			isInFreeFall = false;
 			rb.isKinematic = true;
 			rb.constraints = InitialConstraints;
 		}
 
-		public void TriggerFallSequence()
+		
+		public bool CanHandleTap(TapInputContext inputContext)
+		{
+			if (isInFreeFall)
+				return false;
+
+			return BallPathChecker.CanReachBottom(inputContext.ActiveGridManager, this);
+		}
+
+		public void HandleTap(TapInputContext inputContext)
+		{
+			TriggerFallSequence();
+		}
+
+		private IEnumerator FallSequence()
+		{
+			transform.DOMove(transform.position + Vector3.back * 1.5f, dropSequenceBackMoveDuration);
+			yield return new WaitForSeconds(dropSequenceBackMoveDuration);
+			EnterFreeFall();
+		}
+
+		private void TriggerFallSequence()
 		{
 			if (isInFreeFall)
 				return;
@@ -59,19 +83,40 @@ namespace _Main.Scripts.BallSystem
 			StartCoroutine(FallSequence());
 		}
 
-		private IEnumerator FallSequence()
-		{
-			transform.DOMove(transform.position + Vector3.back * 1.5f, dropSequenceBackMoveDuration);
-			yield return new WaitForSeconds(dropSequenceBackMoveDuration);
-			EnterFreeFall();
-		}
-
 		private bool EnterFreeFall()
 		{
 			rb.isKinematic = false;
 			rb.constraints = FreeFallConstraints;
 			rb.WakeUp();
 			return true;
+		}
+
+		public void PrepareForMerge()
+		{
+			rb.velocity = Vector3.zero;
+			rb.angularVelocity = Vector3.zero;
+			rb.isKinematic = true;
+			rb.constraints = InitialConstraints;
+
+			if (collider != null)
+				collider.enabled = false;
+		}
+
+		public void ReleaseFromBrokenRope()
+		{
+			transform.DOKill();
+			transform.SetParent(LevelManager.Instance.CurrentLevel.transform, true);
+
+			if (collider != null)
+				collider.enabled = true;
+
+			isInFreeFall = true;
+			gridCell = null;
+			rb.isKinematic = false;
+			rb.constraints = FreeFallConstraints;
+			rb.velocity = Vector3.zero;
+			rb.angularVelocity = Vector3.zero;
+			rb.WakeUp();
 		}
 
 		private void SetColorType(ColorType colorType)

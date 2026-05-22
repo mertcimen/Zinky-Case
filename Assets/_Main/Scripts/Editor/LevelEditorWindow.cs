@@ -49,11 +49,16 @@ public class LevelEditorWindow : EditorWindow
 
 		if (levelData.EnsureGridData())
 			EditorUtility.SetDirty(levelData);
+		if (levelData.EnsureRopeData())
+			EditorUtility.SetDirty(levelData);
+
 		DrawGridSize();
 		EditorGUILayout.Space(8f);
 		DrawColorSelection();
 		EditorGUILayout.Space(8f);
 		DrawGrid();
+		EditorGUILayout.Space(8f);
+		DrawRopeSettings();
 	}
 
 	private void DrawHeader()
@@ -92,6 +97,32 @@ public class LevelEditorWindow : EditorWindow
 				Repaint();
 			}
 		}
+	}
+
+	private void DrawRopeSettings()
+	{
+		EditorGUILayout.LabelField("Rope Settings", EditorStyles.boldLabel);
+		EditorGUILayout.LabelField("Use Unity list controls and edit each element fields.", EditorStyles.miniLabel);
+		EditorGUILayout.Space(2f);
+
+		SerializedObject serializedLevelData = new SerializedObject(levelData);
+		SerializedProperty ropeDatasProperty = serializedLevelData.FindProperty("ropeDatas");
+		if (ropeDatasProperty == null)
+		{
+			EditorGUILayout.HelpBox("ropeDatas field could not be found on LevelDataSO.", MessageType.Warning);
+			return;
+		}
+
+		serializedLevelData.Update();
+		EditorGUI.BeginChangeCheck();
+		EditorGUILayout.PropertyField(ropeDatasProperty, new GUIContent("Rope Elements"), true);
+		if (!EditorGUI.EndChangeCheck())
+			return;
+
+		serializedLevelData.ApplyModifiedProperties();
+		levelData.EnsureRopeData();
+		EditorUtility.SetDirty(levelData);
+		Repaint();
 	}
 
 	private void DrawColorSelection()
