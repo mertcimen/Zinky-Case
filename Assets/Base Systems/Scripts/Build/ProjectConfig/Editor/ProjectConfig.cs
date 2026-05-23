@@ -1,8 +1,6 @@
 // using System.IO;
 // using System.Collections.Generic;
 // using ElephantSdkManager.Model;
-// using Facebook.Unity.Editor;
-// using Facebook.Unity.Settings;
 // using Fiber.UI;
 // using Sirenix.OdinInspector;
 // using Unity.EditorCoroutines.Editor;
@@ -32,9 +30,6 @@
 // 		// [Group("tabs"), Tab("Android Settings")] [SerializeField] private string androidVersion = "0.1";
 // 		[TabGroup("tabs", "Android Settings")] [SerializeField] private int androidBuildNo;
 //
-// 		[Title("Facebook Settings")]
-// 		[SerializeField] private string facebookId;
-// 		[SerializeField] private string facebookClientToken;
 //
 // 		[Title("Elephant Settings")]
 // 		[SerializeField] private string gameId;
@@ -49,7 +44,6 @@
 //
 // 		private ElephantSettings elephantSettings;
 // 		private GameData elephantGameData;
-// 		private FacebookSettings facebookSettings;
 //
 // 		private const string LOADING_SCREEN_PATH = "Assets/_Main/Prefabs/UserInterface/LoadingPanel.prefab";
 //
@@ -62,7 +56,6 @@
 // 		public void Open()
 // 		{
 // 			LoadElephant();
-// 			LoadFacebook();
 //
 // 			companyName = PlayerSettings.companyName;
 // 			productName = PlayerSettings.productName;
@@ -87,8 +80,6 @@
 // 			// iOSVersion = androidVersion = PlayerSettings.bundleVersion;
 // 			version = PlayerSettings.bundleVersion;
 //
-// 			facebookId = FacebookSettings.AppIds[0];
-// 			facebookClientToken = FacebookSettings.ClientTokens[0];
 //
 // 			gameId = elephantSettings.GameID;
 // 			gameSecret = elephantSettings.GameSecret;
@@ -142,8 +133,6 @@
 //
 // 			PlayerSettings.bundleVersion = version;
 //
-// 			FacebookSettings.AppIds = new List<string> { facebookId };
-// 			FacebookSettings.ClientTokens = new List<string> { facebookClientToken };
 //
 // 			elephantSettings.GameID = gameId;
 // 			elephantSettings.GameSecret = gameSecret;
@@ -157,7 +146,6 @@
 // 			ChangeReadMe();
 //
 // 			EditorUtility.SetDirty(elephantSettings);
-// 			EditorUtility.SetDirty(facebookSettings);
 // 			AssetDatabase.SaveAssets();
 // 		}
 // 		private void SetAllIcons(NamedBuildTarget target, IconKind kind, Texture2D tex)
@@ -216,14 +204,6 @@
 // 			}
 // 		}
 //
-// 		private void LoadFacebook()
-// 		{
-// 			if (facebookSettings) return;
-//
-// 			// This creates FacebookSettings if it's not created
-// 			FacebookSettingsEditor.Edit();
-// 			facebookSettings = FacebookSettings.Instance;
-// 		}
 //
 // 		private void SetLoadingScreen()
 // 		{
