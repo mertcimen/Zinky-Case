@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5772685810015609396}
   - component: {fileID: 3210734524189124999}
   m_Layer: 0
-  m_Name: Level_00
+  m_Name: Level_Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17e8851ca1ce4367b6d67cf248f46fab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelDataSO: {fileID: 11400000, guid: 17c7234eb600144c29d314639a44c956, type: 2}
+  levelDataSO: {fileID: 0}
   gridManager: {fileID: 4813542120032242482}
   ropeController: {fileID: 662244331098776655}
   mergeController: {fileID: 0}
