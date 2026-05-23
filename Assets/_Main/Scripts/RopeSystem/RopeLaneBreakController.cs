@@ -27,6 +27,8 @@ namespace _Main.Scripts.RopeSystem
 				obiRope = rope;
 
 			ResolveRopeIfNeeded();
+			if (obiRope != null)
+				obiRope.enabled = true;
 			ResolveRopeRendererIfNeeded();
 			CacheRopeCollisionFlagsIfNeeded();
 			RestoreRopeCollisionFlags();
@@ -163,7 +165,10 @@ namespace _Main.Scripts.RopeSystem
 		private void AnimateBrokenRopeThicknessToZero()
 		{
 			if (ropeExtrudedRenderer == null)
+			{
+				DisableRopeComponent();
 				return;
+			}
 
 			StopEffects();
 			brokenThicknessFadeRoutine = StartCoroutine(FadeBrokenRopeThicknessToZero());
@@ -176,6 +181,7 @@ namespace _Main.Scripts.RopeSystem
 
 			if (ropeExtrudedRenderer == null)
 			{
+				DisableRopeComponent();
 				brokenThicknessFadeRoutine = null;
 				yield break;
 			}
@@ -184,6 +190,7 @@ namespace _Main.Scripts.RopeSystem
 			if (brokenThicknessFadeDuration <= 0f)
 			{
 				SetRopeRendererThickness(0f);
+				DisableRopeComponent();
 				brokenThicknessFadeRoutine = null;
 				yield break;
 			}
@@ -198,6 +205,7 @@ namespace _Main.Scripts.RopeSystem
 			}
 
 			SetRopeRendererThickness(0f);
+			DisableRopeComponent();
 			brokenThicknessFadeRoutine = null;
 		}
 
@@ -208,6 +216,14 @@ namespace _Main.Scripts.RopeSystem
 
 			ropeExtrudedRenderer.thicknessScale = Mathf.Max(0f, thickness);
 			((ObiActorRenderer<ObiRopeExtrudedRenderer>)ropeExtrudedRenderer).SetRendererDirty(Oni.RenderingSystemType.AllSmoothedRopes);
+		}
+
+		private void DisableRopeComponent()
+		{
+			if (obiRope == null)
+				return;
+
+			obiRope.enabled = false;
 		}
 	}
 }

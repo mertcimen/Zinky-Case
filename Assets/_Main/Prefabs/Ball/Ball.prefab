@@ -188,6 +188,7 @@ GameObject:
   - component: {fileID: 6767283239082982266}
   - component: {fileID: 5801338301736760442}
   - component: {fileID: 6072892024720341959}
+  - component: {fileID: 7148831518779842167}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -238,7 +239,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 766ba0c35bbc84c5c90ceadd159c8bb3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -260,3 +261,19 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &7148831518779842167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8980015492062261537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aacf00b40964419ab12181a1a5479a79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rend: {fileID: 6072892024720341959}
+  MaxWobble: 0.03
+  WobbleSpeed: 1
+  Recovery: 1
