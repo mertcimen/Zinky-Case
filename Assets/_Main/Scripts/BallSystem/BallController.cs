@@ -10,12 +10,19 @@ namespace _Main.Scripts.BallSystem
 {
 	[RequireComponent(typeof(Rigidbody))]
 	[RequireComponent(typeof(BallRendererController))]
-	public class BallController : MonoBehaviour, ITapInteractable
+	public class BallController : MonoBehaviour, ITapInteractable, ITapRejectedFeedback
 	{
 		[Header("Components")]
 		[SerializeField] private Rigidbody rb;
 		[SerializeField] private Collider collider;
 		[SerializeField] private BallRendererController ballRendererController;
+
+		[Header("Invalid Tap Feedback")]
+		[SerializeField] private float invalidTapFeedbackDuration = 0.18f;
+		[SerializeField] private Vector3 invalidTapPositionPunch = new Vector3(0.18f, 0.06f, 0f);
+		[SerializeField] private float invalidTapScalePunch = 0.14f;
+		[SerializeField] private int invalidTapVibrato = 10;
+		[SerializeField] private float invalidTapElasticity = 0.75f;
 
 		private const RigidbodyConstraints InitialConstraints = RigidbodyConstraints.FreezePositionX |
 		                                                        RigidbodyConstraints.FreezePositionY |
@@ -27,6 +34,8 @@ namespace _Main.Scripts.BallSystem
 		private GridCell gridCell;
 		private bool isInFreeFall;
 		private float dropSequenceBackMoveDuration = 0.2f;
+		private Tween invalidTapFeedbackTween;
+		private bool isInvalidTapFeedbackPlaying;
 
 		public BallRendererController BallRendererController => ballRendererController;
 		public ColorType ColorType => colorType;
@@ -65,6 +74,14 @@ namespace _Main.Scripts.BallSystem
 			TriggerFallSequence();
 		}
 
+		public void HandleTapRejected(TapInputContext inputContext)
+		{
+			if (isInFreeFall)
+				return;
+
+			PlayInvalidTapFeedback();
+		}
+
 		private IEnumerator FallSequence()
 		{
 			transform.DOScale(Vector3.one * 1.2f, dropSequenceBackMoveDuration).OnComplete((() =>
@@ -82,6 +99,7 @@ namespace _Main.Scripts.BallSystem
 			if (isInFreeFall)
 				return;
 
+			StopInvalidTapFeedback();
 			isInFreeFall = true;
 			gridCell = null;
 			transform.SetParent(LevelManager.Instance.CurrentLevel.transform, true);
@@ -96,6 +114,47 @@ namespace _Main.Scripts.BallSystem
 			rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
 
 			return true;
+		}
+
+		private void PlayInvalidTapFeedback()
+		{
+			if (isInvalidTapFeedbackPlaying)
+				return;
+
+			isInvalidTapFeedbackPlaying = true;
+			Vector3 startLocalPosition = transform.localPosition;
+			Vector3 startLocalScale = transform.localScale;
+
+			float duration = Mathf.Max(0.01f, invalidTapFeedbackDuration);
+			Sequence sequence = DOTween.Sequence();
+			sequence.Join(transform.DOPunchPosition(invalidTapPositionPunch, duration, invalidTapVibrato,
+				invalidTapElasticity, false));
+			sequence.Join(transform.DOPunchScale(Vector3.one * invalidTapScalePunch, duration, invalidTapVibrato,
+				invalidTapElasticity));
+			sequence.OnKill(() =>
+			{
+				transform.localPosition = startLocalPosition;
+				transform.localScale = startLocalScale;
+				isInvalidTapFeedbackPlaying = false;
+				invalidTapFeedbackTween = null;
+			});
+			sequence.OnComplete(() =>
+			{
+				transform.localPosition = startLocalPosition;
+				transform.localScale = startLocalScale;
+				isInvalidTapFeedbackPlaying = false;
+				invalidTapFeedbackTween = null;
+			});
+			invalidTapFeedbackTween = sequence;
+		}
+
+		private void StopInvalidTapFeedback()
+		{
+			if (invalidTapFeedbackTween != null && invalidTapFeedbackTween.IsActive())
+				invalidTapFeedbackTween.Kill();
+
+			isInvalidTapFeedbackPlaying = false;
+			invalidTapFeedbackTween = null;
 		}
 
 		public void PrepareForMerge()
@@ -129,6 +188,11 @@ namespace _Main.Scripts.BallSystem
 		private void SetColorType(ColorType colorType)
 		{
 			this.colorType = colorType;
+		}
+
+		private void OnDisable()
+		{
+			StopInvalidTapFeedback();
 		}
 	}
 }

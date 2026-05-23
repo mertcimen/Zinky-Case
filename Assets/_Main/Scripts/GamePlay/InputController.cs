@@ -1,4 +1,3 @@
-using System;
 using _Main.Scripts.GridSystem;
 using Base_Systems.Scripts.Managers;
 using Base_Systems.Scripts.Utilities.Singletons;
@@ -60,10 +59,14 @@ namespace _Main.Scripts.GamePlay
 			if (IsPointerOverUI())
 				return;
 
-			if (!TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext))
+			if (TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext,
+				    out ITapRejectedFeedback rejectedFeedback, out TapInputContext rejectedTapInputContext))
+			{
+				tapInteractable.HandleTap(tapInputContext);
 				return;
+			}
 
-			tapInteractable.HandleTap(tapInputContext);
+			rejectedFeedback?.HandleTapRejected(rejectedTapInputContext);
 		}
 
 		private static bool IsSelectionInputStarted()
@@ -88,10 +91,13 @@ namespace _Main.Scripts.GamePlay
 			return EventSystem.current.IsPointerOverGameObject();
 		}
 
-		private bool TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext)
+		private bool TryGetTapInteractable(out ITapInteractable tapInteractable, out TapInputContext tapInputContext,
+			out ITapRejectedFeedback rejectedFeedback, out TapInputContext rejectedTapInputContext)
 		{
 			tapInteractable = null;
 			tapInputContext = default;
+			rejectedFeedback = null;
+			rejectedTapInputContext = default;
 
 			if (mainCamera == null)
 				return false;
@@ -106,6 +112,7 @@ namespace _Main.Scripts.GamePlay
 				return false;
 
 			float closestDistance = float.MaxValue;
+			float closestRejectedDistance = float.MaxValue;
 			for (int i = 0; i < hitCount; i++)
 			{
 				RaycastHit hit = raycastHitsBuffer[i];
@@ -120,7 +127,17 @@ namespace _Main.Scripts.GamePlay
 				TapInputContext candidateContext =
 					new TapInputContext(this, mainCamera, screenPosition, ray, hit, isTouchInput);
 				if (!candidateTapInteractable.CanHandleTap(candidateContext))
+				{
+					if (candidateTapInteractable is ITapRejectedFeedback candidateRejectedFeedback &&
+					    hit.distance < closestRejectedDistance)
+					{
+						closestRejectedDistance = hit.distance;
+						rejectedFeedback = candidateRejectedFeedback;
+						rejectedTapInputContext = candidateContext;
+					}
+
 					continue;
+				}
 
 				if (hit.distance >= closestDistance)
 					continue;

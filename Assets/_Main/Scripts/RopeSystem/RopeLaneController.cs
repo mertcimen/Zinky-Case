@@ -61,6 +61,7 @@ namespace _Main.Scripts.RopeSystem
 			ResolveCapacityTextControllerIfNeeded();
 			ropeLaneBreakController?.Initialize(obiRope);
 			ropeLaneStretchController?.Initialize(obiRope);
+			ropeLaneCapacityTextController?.SetTextVisibility(true);
 			ResolveEdgeAttachmentsIfNeeded();
 			EnsureLandingTrigger();
 			isBroken = false;
@@ -427,6 +428,7 @@ namespace _Main.Scripts.RopeSystem
 			ropeLaneStretchController?.StopAnimation();
 
 			ropeLaneBreakController?.HandleRopeBreak(ropeIndex);
+			ropeLaneCapacityTextController?.SetTextVisibility(false);
 			CleanupNullBalls();
 
 			List<BallController> remainingBalls = new(ballsOnRope.Count);
