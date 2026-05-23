@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b949864cf4b24eab8d2d0663f2700950, type: 3}
+  m_Name: ParticleColorData
+  m_EditorClassIdentifier: 
+  particleColors:
+  - colorType: 1
+    color: {r: 0.105731584, g: 0.16823903, b: 0.8301887, a: 1}
+  - colorType: 2
+    color: {r: 0.15970623, g: 0.7075472, b: 0.08343716, a: 1}
+  - colorType: 3
+    color: {r: 0.8018868, g: 0.06430225, b: 0.06430225, a: 1}
+  - colorType: 4
+    color: {r: 0.8679245, g: 0.57122177, b: 0.118725546, a: 1}
+  - colorType: 5
+    color: {r: 0.9056604, g: 0.8925944, b: 0.13243146, a: 1}
+  - colorType: 6
+    color: {r: 0.45322582, g: 0.078497685, b: 0.7924528, a: 1}
+  - colorType: 7
+    color: {r: 0.8962264, g: 0.08877714, b: 0.86139387, a: 1}

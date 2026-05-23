@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using _Main.Scripts.Containers;
+using _Main.Scripts.Datas;
 using Base_Systems.Scripts.Managers;
 using Base_Systems.Scripts.Utilities.Singletons;
 using Sirenix.OdinInspector;
@@ -24,6 +26,7 @@ namespace Base_Systems.Scripts.Utilities
 
 		[TableList]
 		[SerializeField] private List<Pool> pools = new List<Pool>();
+		[SerializeField] private ParticleColorDataSO particleColorDataSO;
 		private readonly Dictionary<string, Queue<ParticleSystem>> poolDictionary = new Dictionary<string, Queue<ParticleSystem>>();
 
 		private void Awake()
@@ -71,8 +74,22 @@ namespace Base_Systems.Scripts.Utilities
 		public ParticleSystem Spawn(string poolTag, Vector3 position)
 		{
 			var particle = SpawnFromPool(poolTag);
+			if (particle == null)
+				return null;
 
 			particle.transform.position = position;
+			particle.Play();
+			return particle;
+		}
+
+		public ParticleSystem Spawn(string poolTag, Vector3 position, ColorType colorType)
+		{
+			var particle = SpawnFromPool(poolTag, colorType);
+			if (particle == null)
+				return null;
+
+			particle.transform.position = position;
+			particle.Play();
 			return particle;
 		}
 
@@ -86,9 +103,12 @@ namespace Base_Systems.Scripts.Utilities
 		public ParticleSystem Spawn(string poolTag, Vector3 position, Quaternion rotation)
 		{
 			var particle = SpawnFromPool(poolTag);
+			if (particle == null)
+				return null;
 
 			particle.transform.position = position;
 			particle.transform.rotation = rotation;
+			particle.Play();
 			return particle;
 		}
 
@@ -102,12 +122,15 @@ namespace Base_Systems.Scripts.Utilities
 		public ParticleSystem Spawn(string poolTag, Transform parent, bool keepWorldRotation = false)
 		{
 			var particle = SpawnFromPool(poolTag);
+			if (particle == null)
+				return null;
 
 			var pTransform = particle.transform;
 			pTransform.SetParent(parent);
 			pTransform.localPosition = Vector3.zero;
 			if (!keepWorldRotation)
 				pTransform.forward = parent.forward;
+			particle.Play();
 			return particle;
 		}
 
@@ -121,11 +144,14 @@ namespace Base_Systems.Scripts.Utilities
 		public ParticleSystem Spawn(string poolTag, Vector3 position, Transform parent)
 		{
 			var particle = SpawnFromPool(poolTag);
+			if (particle == null)
+				return null;
 
 			var pTransform = particle.transform;
 			pTransform.position = position;
 			pTransform.forward = parent.forward;
 			pTransform.SetParent(parent);
+			particle.Play();
 			return particle;
 		}
 
@@ -140,15 +166,18 @@ namespace Base_Systems.Scripts.Utilities
 		public ParticleSystem Spawn(string poolTag, Vector3 position, Quaternion rotation, Transform parent)
 		{
 			var particle = SpawnFromPool(poolTag);
+			if (particle == null)
+				return null;
 
 			var pTransform = particle.transform;
 			pTransform.position = position;
 			pTransform.rotation = rotation;
 			pTransform.SetParent(parent);
+			particle.Play();
 			return particle;
 		}
 
-		private ParticleSystem SpawnFromPool(string poolTag)
+		private ParticleSystem SpawnFromPool(string poolTag, ColorType? colorType = null)
 		{
 			if (!poolDictionary.TryGetValue(poolTag, out var value))
 			{
@@ -158,11 +187,32 @@ namespace Base_Systems.Scripts.Utilities
 
 			var particle = value.Dequeue();
 			particle.gameObject.SetActive(true);
-			particle.Play();
+
+			if (colorType.HasValue)
+				ApplyStartColorToHierarchy(particle, ResolveColor(colorType.Value));
 
 			poolDictionary[poolTag].Enqueue(particle);
 
 			return particle;
+		}
+
+		private Color ResolveColor(ColorType colorType)
+		{
+			if (particleColorDataSO != null && particleColorDataSO.TryGetColor(colorType, out Color color))
+				return color;
+
+			Debug.LogWarning($"Particle color is not mapped for '{colorType}'. White will be used.");
+			return Color.white;
+		}
+
+		private void ApplyStartColorToHierarchy(ParticleSystem rootParticle, Color color)
+		{
+			ParticleSystem[] particleSystems = rootParticle.GetComponentsInChildren<ParticleSystem>(true);
+			for (int i = 0; i < particleSystems.Length; i++)
+			{
+				ParticleSystem.MainModule mainModule = particleSystems[i].main;
+				mainModule.startColor = new ParticleSystem.MinMaxGradient(color);
+			}
 		}
 
 		/// <summary>

@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using _Main.Scripts.BallSystem;
+using Base_Systems.AudioSystem.Scripts;
 using Base_Systems.Scripts.Managers;
+using Base_Systems.Scripts.Utilities;
 using DG.Tweening;
 using UnityEngine;
 
@@ -27,6 +29,7 @@ namespace _Main.Scripts.MergeSystem
 		[SerializeField] private float absorbDuration = DefaultAbsorbDuration;
 		[SerializeField] private float focusPulseDuration = DefaultFocusPulseDuration;
 		[SerializeField] private float focusScaleMultiplier = DefaultFocusScaleMultiplier;
+		[SerializeField] private string mergeParticlePoolTag = "Water";
 
 		public IEnumerator PlayMergeSequence(IReadOnlyList<BallController> candidateBalls)
 		{
@@ -42,7 +45,7 @@ namespace _Main.Scripts.MergeSystem
 			yield return AbsorbBallsIntoFocus(mergeBalls, focusBall);
 			yield return PulseFocusBall(focusBall);
 
-			DestroyBalls(mergeBalls);
+			DestroyBalls(mergeBalls, focusBall);
 		}
 
 		private List<BallController> CollectValidBalls(IReadOnlyList<BallController> sourceBalls)
@@ -187,8 +190,10 @@ namespace _Main.Scripts.MergeSystem
 			yield return new WaitUntil(() => finishedCount >= movingBallCount);
 		}
 
-		private void DestroyBalls(IReadOnlyList<BallController> mergeBalls)
+		private void DestroyBalls(IReadOnlyList<BallController> mergeBalls, BallController focusBall)
 		{
+			PlayMergeParticle(focusBall);
+
 			int destroyedBallCount = 0;
 			for (int i = 0; i < mergeBalls.Count; i++)
 			{
@@ -200,7 +205,19 @@ namespace _Main.Scripts.MergeSystem
 				Destroy(ballController.gameObject);
 			}
 
+			AudioManager.Instance.PlayAudio(AudioName.Plop1);
 			LevelManager.Instance.CurrentLevel.DecreaseRemainingBallCount(destroyedBallCount);
+		}
+
+		private void PlayMergeParticle(BallController focusBall)
+		{
+			if (focusBall == null)
+				return;
+
+			if (ParticlePooler.Instance == null)
+				return;
+
+			ParticlePooler.Instance.Spawn(mergeParticlePoolTag, focusBall.transform.position, focusBall.ColorType);
 		}
 	}
 }
