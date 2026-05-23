@@ -20,6 +20,7 @@ namespace _Main.Scripts.RopeSystem
 		[SerializeField] private ObiRope obiRope;
 		[SerializeField] private RopeLaneBreakController ropeLaneBreakController;
 		[SerializeField] private RopeLaneStretchController ropeLaneStretchController;
+		[SerializeField] private RopeLaneCapacityTextController ropeLaneCapacityTextController;
 		[SerializeField] private ObiParticleAttachment leftEdgeAttachment;
 		[SerializeField] private ObiParticleAttachment rightEdgeAttachment;
 		[SerializeField] private Collider landingTrigger;
@@ -45,7 +46,8 @@ namespace _Main.Scripts.RopeSystem
 		public IReadOnlyList<BallController> BallsOnRope => ballsOnRope;
 		public ObiRope ObiRope => obiRope;
 
-		public void Initialize(int laneIndex, int capacity, MergeController mergeController, RopeController ropeController)
+		public void Initialize(int laneIndex, int capacity, MergeController mergeController,
+			RopeController ropeController)
 		{
 			ropeIndex = laneIndex;
 			maxCapacity = Mathf.Max(1, capacity);
@@ -56,6 +58,7 @@ namespace _Main.Scripts.RopeSystem
 
 			ResolveBreakControllerIfNeeded();
 			ResolveStretchControllerIfNeeded();
+			ResolveCapacityTextControllerIfNeeded();
 			ropeLaneBreakController?.Initialize(obiRope);
 			ropeLaneStretchController?.Initialize(obiRope);
 			ResolveEdgeAttachmentsIfNeeded();
@@ -65,6 +68,7 @@ namespace _Main.Scripts.RopeSystem
 			pendingLandingBalls.Clear();
 			CleanupNullBalls();
 			UpdateStretching();
+			UpdateCapacityText();
 			gameObject.name = $"Rope_{laneIndex + 1}";
 		}
 
@@ -99,6 +103,7 @@ namespace _Main.Scripts.RopeSystem
 
 			ballsOnRope.Add(ballController);
 			UpdateStretching();
+			UpdateCapacityText();
 			TriggerMergeCheck();
 			if (ballsOnRope.Count >= maxCapacity)
 				TriggerCapacityResolution();
@@ -114,6 +119,7 @@ namespace _Main.Scripts.RopeSystem
 				return;
 
 			UpdateStretching();
+			UpdateCapacityText();
 		}
 
 		public int GetColorMatchCount(ColorType colorType)
@@ -241,6 +247,15 @@ namespace _Main.Scripts.RopeSystem
 
 			if (ropeLaneStretchController == null)
 				ropeLaneStretchController = gameObject.AddComponent<RopeLaneStretchController>();
+		}
+
+		private void ResolveCapacityTextControllerIfNeeded()
+		{
+			if (ropeLaneCapacityTextController == null)
+				ropeLaneCapacityTextController = GetComponent<RopeLaneCapacityTextController>();
+
+			if (ropeLaneCapacityTextController == null)
+				ropeLaneCapacityTextController = gameObject.AddComponent<RopeLaneCapacityTextController>();
 		}
 
 		private void EnsureLandingTrigger()
@@ -423,6 +438,7 @@ namespace _Main.Scripts.RopeSystem
 			}
 
 			ballsOnRope.Clear();
+			UpdateCapacityText();
 			return remainingBalls;
 		}
 
@@ -439,6 +455,11 @@ namespace _Main.Scripts.RopeSystem
 		private void UpdateStretching()
 		{
 			ropeLaneStretchController?.UpdateStretchForBallCount(ballsOnRope.Count, !isBroken);
+		}
+
+		private void UpdateCapacityText()
+		{
+			ropeLaneCapacityTextController?.UpdateCapacityText(ballsOnRope.Count, maxCapacity);
 		}
 	}
 }

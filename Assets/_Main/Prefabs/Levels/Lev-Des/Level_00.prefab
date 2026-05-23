@@ -49,6 +49,7 @@ MonoBehaviour:
   levelDataSO: {fileID: 11400000, guid: 17c7234eb600144c29d314639a44c956, type: 2}
   gridManager: {fileID: 4813542120032242482}
   ropeController: {fileID: 662244331098776655}
+  mergeController: {fileID: 0}
 --- !u!1001 &937828828815531877
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -136,7 +137,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4421511621749511256, guid: cba9971f320214c03b8d13afbc643b47, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 4421511621749511256, guid: cba9971f320214c03b8d13afbc643b47, type: 3}
       propertyPath: m_LocalPosition.z

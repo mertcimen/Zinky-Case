@@ -26,8 +26,9 @@ namespace _Main.Scripts.BallSystem
 		private ColorType colorType;
 		private GridCell gridCell;
 		private bool isInFreeFall;
-		private float dropSequenceBackMoveDuration = 0.5f;
+		private float dropSequenceBackMoveDuration = 0.2f;
 
+		public BallRendererController BallRendererController => ballRendererController;
 		public ColorType ColorType => colorType;
 		public GridCell GridCell => gridCell;
 		public bool IsInFreeFall => isInFreeFall;
@@ -51,7 +52,6 @@ namespace _Main.Scripts.BallSystem
 			rb.constraints = InitialConstraints;
 		}
 
-		
 		public bool CanHandleTap(TapInputContext inputContext)
 		{
 			if (isInFreeFall)
@@ -67,6 +67,11 @@ namespace _Main.Scripts.BallSystem
 
 		private IEnumerator FallSequence()
 		{
+			transform.DOScale(Vector3.one * 1.2f, dropSequenceBackMoveDuration).OnComplete((() =>
+			{
+				transform.DOScale(Vector3.one, dropSequenceBackMoveDuration / 2f);
+			}));
+
 			transform.DOMove(transform.position + Vector3.back * 1.5f, dropSequenceBackMoveDuration);
 			yield return new WaitForSeconds(dropSequenceBackMoveDuration);
 			EnterFreeFall();
@@ -88,6 +93,8 @@ namespace _Main.Scripts.BallSystem
 			rb.isKinematic = false;
 			rb.constraints = FreeFallConstraints;
 			rb.WakeUp();
+			rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
+
 			return true;
 		}
 

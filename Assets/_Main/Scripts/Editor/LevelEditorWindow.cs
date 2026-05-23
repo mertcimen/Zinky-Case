@@ -151,7 +151,7 @@ public class LevelEditorWindow : EditorWindow
 		int columns = levelData.ColumnCount;
 		int rows = levelData.RowCount;
 
-		for (int row = 0; row < rows; row++)
+		for (int row = rows - 1; row >= 0; row--)
 		{
 			using (new EditorGUILayout.HorizontalScope())
 			{

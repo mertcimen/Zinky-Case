@@ -1,5 +1,6 @@
 using System.Linq;
 using _Main.Scripts.Containers;
+using DG.Tweening;
 using UnityEngine;
 
 namespace _Main.Scripts.BallSystem
@@ -8,6 +9,7 @@ namespace _Main.Scripts.BallSystem
 	{
 		[SerializeField] private Renderer renderer;
 
+		private static readonly int FoamWidthId = Shader.PropertyToID("_FoamWidth");
 		public void Initialize(ColorType colorType)
 		{
 			var targetMaterialData =
@@ -19,5 +21,19 @@ namespace _Main.Scripts.BallSystem
 				renderer.material = targetMaterialData.material;
 			}
 		}
+		
+		
+		public Tween DoFoamWidth(float targetValue, float duration)
+		{
+			Material material = renderer.material;
+
+			return DOTween.To(
+				() => material.GetFloat(FoamWidthId),
+				value => material.SetFloat(FoamWidthId, value),
+				targetValue,
+				duration
+			);
+		}
+		
 	}
 }

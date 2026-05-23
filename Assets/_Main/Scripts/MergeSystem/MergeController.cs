@@ -17,6 +17,9 @@ namespace _Main.Scripts.MergeSystem
 		private const float DefaultFocusPulseDuration = 0.15f;
 		private const float DefaultFocusScaleMultiplier = 1.2f;
 
+		[SerializeField] private float focusFoamDuration = 0.4f;
+		[SerializeField] private float focusFoamTargetValue = 0f;
+
 		[SerializeField] private float startStaggerDelay = DefaultStartStaggerDelay;
 		[SerializeField] private float backwardDistance = DefaultBackwardDistance;
 		[SerializeField] private float backwardMoveDuration = DefaultBackwardMoveDuration;
@@ -36,8 +39,8 @@ namespace _Main.Scripts.MergeSystem
 			yield return MoveBallsBackwardInStagger(mergeBalls);
 			BallController focusBall = GetClosestBallToCenterX(mergeBalls);
 			yield return AlignBallsToCenterXAndFocusY(mergeBalls, focusBall);
-			yield return PulseFocusBall(focusBall);
 			yield return AbsorbBallsIntoFocus(mergeBalls, focusBall);
+			yield return PulseFocusBall(focusBall);
 
 			DestroyBalls(mergeBalls);
 		}
@@ -74,17 +77,28 @@ namespace _Main.Scripts.MergeSystem
 			{
 				Transform ballTransform = mergeBalls[i].transform;
 				Vector3 targetPosition = ballTransform.position + Vector3.back * backwardDistance;
-				ballTransform
-					.DOMove(targetPosition, backwardMoveDuration)
-					.SetEase(Ease.InOutSine)
-					.SetDelay(i * startStaggerDelay)
-					.OnComplete(() => { finishedCount++; });
+				ballTransform.DOMove(targetPosition, backwardMoveDuration).SetEase(Ease.InOutSine)
+					.SetDelay(i * startStaggerDelay).OnComplete(() => { finishedCount++; });
 			}
 
 			yield return new WaitUntil(() => finishedCount >= ballCount);
 		}
 
-		private IEnumerator AlignBallsToCenterXAndFocusY(IReadOnlyList<BallController> mergeBalls, BallController focusBall)
+		private IEnumerator PlayFocusFoamEffect(BallController focusBall)
+		{
+			if (focusBall == null || focusBall.BallRendererController == null)
+				yield break;
+
+			bool isFinished = false;
+
+			focusBall.BallRendererController.DoFoamWidth(focusFoamTargetValue, focusFoamDuration).SetEase(Ease.OutQuad)
+				.OnComplete(() => isFinished = true);
+
+			yield return new WaitUntil(() => isFinished);
+		}
+
+		private IEnumerator AlignBallsToCenterXAndFocusY(IReadOnlyList<BallController> mergeBalls,
+			BallController focusBall)
 		{
 			int finishedCount = 0;
 			int ballCount = mergeBalls.Count;
@@ -95,9 +109,7 @@ namespace _Main.Scripts.MergeSystem
 				Transform ballTransform = mergeBalls[i].transform;
 				Vector3 position = ballTransform.position;
 				Vector3 targetPosition = new Vector3(0f, targetY, position.z);
-				ballTransform
-					.DOMove(targetPosition, centerAlignDuration)
-					.SetEase(Ease.InOutSine)
+				ballTransform.DOMove(targetPosition, centerAlignDuration).SetEase(Ease.InOutSine)
 					.OnComplete(() => { finishedCount++; });
 			}
 
@@ -129,13 +141,22 @@ namespace _Main.Scripts.MergeSystem
 				yield break;
 
 			bool isFinished = false;
+
 			Transform focusTransform = focusBall.transform;
 			Vector3 initialScale = focusTransform.localScale;
-			focusTransform
-				.DOScale(initialScale * focusScaleMultiplier, focusPulseDuration)
-				.SetEase(Ease.OutQuad)
-				.SetLoops(2, LoopType.Yoyo)
-				.OnComplete(() => { isFinished = true; });
+
+			Sequence sequence = DOTween.Sequence();
+
+			sequence.Join(focusTransform.DOScale(initialScale * focusScaleMultiplier, focusPulseDuration)
+				.SetEase(Ease.OutQuad).SetLoops(2, LoopType.Yoyo));
+
+			if (focusBall.BallRendererController != null)
+			{
+				sequence.Join(focusBall.BallRendererController.DoFoamWidth(focusFoamTargetValue, focusFoamDuration)
+					.SetEase(Ease.OutQuad));
+			}
+
+			sequence.OnComplete(() => isFinished = true);
 
 			yield return new WaitUntil(() => isFinished);
 		}
@@ -156,10 +177,11 @@ namespace _Main.Scripts.MergeSystem
 					continue;
 
 				movingBallCount++;
-				ballController.transform
-					.DOMove(focusPosition, absorbDuration)
-					.SetEase(Ease.InQuad)
-					.OnComplete(() => { finishedCount++; });
+				ballController.transform.DOMove(focusPosition, absorbDuration).SetEase(Ease.InQuad).OnComplete(() =>
+				{
+					finishedCount++;
+					ballController.gameObject.SetActive(false);
+				});
 			}
 
 			yield return new WaitUntil(() => finishedCount >= movingBallCount);
