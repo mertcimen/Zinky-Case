@@ -69,7 +69,6 @@ Assets/Resources/BillingMode.json.meta
 
 .idea/
 Recordings/
-/[Ss]creenshots/
 *.DS_Store
 ProjectSettings/BurstAotSettings_iOS.json
 ProjectSettings/RiderScriptEditorPersistedState.asset
