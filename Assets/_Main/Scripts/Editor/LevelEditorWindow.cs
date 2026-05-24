@@ -1,5 +1,6 @@
 using _Main.Scripts.Containers;
 using _Main.Scripts.Datas;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ public class LevelEditorWindow : EditorWindow
 	private const float CELL_SPACING = 4f;
 	private const float COLOR_SWATCH_SIZE = 30f;
 	private const float COLOR_SWATCH_SPACING = 6f;
+	private const int REQUIRED_COLOR_GROUP_SIZE = 3;
 
 	private static readonly ColorType[] ColorSelectionOrder =
 	{
@@ -22,9 +24,23 @@ public class LevelEditorWindow : EditorWindow
 		ColorType.Pink,
 		ColorType.None
 	};
+	
+	private static readonly ColorType[] ValidationColorOrder =
+	{
+		ColorType.Blue,
+		ColorType.Green,
+		ColorType.Red,
+		ColorType.Orange,
+		ColorType.Yellow,
+		ColorType.Purple,
+		ColorType.Pink
+	};
 
 	private LevelDataSO levelData;
 	private ColorType selectedColorType = ColorType.Blue;
+	private readonly List<ColorValidationResult> colorValidationResults = new();
+	private bool hasColorValidationResults;
+	private int invalidColorCount;
 
 	[MenuItem("Tools/Level Editor")]
 	private static void OpenWindow()
@@ -48,7 +64,10 @@ public class LevelEditorWindow : EditorWindow
 		}
 
 		if (levelData.EnsureGridData())
+		{
 			EditorUtility.SetDirty(levelData);
+			InvalidateColorValidationSummary();
+		}
 		if (levelData.EnsureRopeData())
 			EditorUtility.SetDirty(levelData);
 
@@ -57,6 +76,8 @@ public class LevelEditorWindow : EditorWindow
 		DrawColorSelection();
 		EditorGUILayout.Space(8f);
 		DrawGrid();
+		EditorGUILayout.Space(8f);
+		DrawColorValidationSummary();
 		EditorGUILayout.Space(8f);
 		DrawRopeSettings();
 	}
@@ -71,7 +92,10 @@ public class LevelEditorWindow : EditorWindow
 	{
 		using (new EditorGUILayout.HorizontalScope())
 		{
+			LevelDataSO previousLevelData = levelData;
 			levelData = (LevelDataSO)EditorGUILayout.ObjectField("Level Data", levelData, typeof(LevelDataSO), false);
+			if (levelData != previousLevelData)
+				InvalidateColorValidationSummary();
 
 			if (GUILayout.Button("Create", GUILayout.Width(80f)))
 				CreateNewLevelDataAsset();
@@ -94,6 +118,7 @@ public class LevelEditorWindow : EditorWindow
 				Undo.RecordObject(levelData, "Change Level Grid Size");
 				levelData.SetGridSize(newColumns, newRows);
 				EditorUtility.SetDirty(levelData);
+				InvalidateColorValidationSummary();
 				Repaint();
 			}
 		}
@@ -172,6 +197,119 @@ public class LevelEditorWindow : EditorWindow
 			GUILayout.Space(CELL_SPACING);
 		}
 	}
+	
+	private void DrawColorValidationSummary()
+	{
+		EditorGUILayout.LabelField("Color Validation Summary", EditorStyles.boldLabel);
+		EditorGUILayout.LabelField("Each color count must be 3 or a multiple of 3.", EditorStyles.miniLabel);
+		EditorGUILayout.Space(2f);
+
+		if (GUILayout.Button("Show Color Summary", GUILayout.Height(24f)))
+			BuildColorValidationSummary();
+
+		if (!hasColorValidationResults)
+			return;
+
+		MessageType resultMessageType = invalidColorCount == 0 ? MessageType.Info : MessageType.Warning;
+		string resultMessage = invalidColorCount == 0
+			? "All colors are valid multiples of 3."
+			: $"{invalidColorCount} color(s) have invalid counts. 'Excess' shows removable amount, 'Missing' shows required amount.";
+		EditorGUILayout.HelpBox(resultMessage, resultMessageType);
+
+		DrawColorValidationTable();
+	}
+
+	private void DrawColorValidationTable()
+	{
+		using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+		{
+			DrawColorValidationTableHeader();
+
+			for (int i = 0; i < colorValidationResults.Count; i++)
+			{
+				ColorValidationResult result = colorValidationResults[i];
+				using (new EditorGUILayout.HorizontalScope())
+				{
+					Rect swatchRect = GUILayoutUtility.GetRect(14f, 14f, GUILayout.Width(14f), GUILayout.Height(14f));
+					EditorGUI.DrawRect(swatchRect, ToDisplayColor(result.ColorType));
+					GUILayout.Space(4f);
+
+					GUILayout.Label(result.ColorType.ToString(), GUILayout.Width(88f));
+					GUILayout.Label(result.Count.ToString(), GUILayout.Width(52f));
+					GUILayout.Label(result.Excess == 0 ? "-" : result.Excess.ToString(), GUILayout.Width(52f));
+					GUILayout.Label(result.Missing == 0 ? "-" : result.Missing.ToString(), GUILayout.Width(52f));
+					GUILayout.Label(result.StatusLabel, GUILayout.ExpandWidth(true));
+				}
+			}
+		}
+	}
+
+	private static void DrawColorValidationTableHeader()
+	{
+		GUIStyle headerStyle = new GUIStyle(EditorStyles.boldLabel)
+		{
+			fontSize = 10
+		};
+
+		using (new EditorGUILayout.HorizontalScope())
+		{
+			GUILayout.Space(18f);
+			GUILayout.Label("Color", headerStyle, GUILayout.Width(88f));
+			GUILayout.Label("Count", headerStyle, GUILayout.Width(52f));
+			GUILayout.Label("Excess", headerStyle, GUILayout.Width(52f));
+			GUILayout.Label("Missing", headerStyle, GUILayout.Width(52f));
+			GUILayout.Label("Status", headerStyle, GUILayout.ExpandWidth(true));
+		}
+	}
+
+	private void BuildColorValidationSummary()
+	{
+		if (levelData == null)
+			return;
+
+		colorValidationResults.Clear();
+		invalidColorCount = 0;
+
+		for (int i = 0; i < ValidationColorOrder.Length; i++)
+		{
+			ColorType colorType = ValidationColorOrder[i];
+			int colorCount = CountCellsByColor(colorType);
+			int remainder = colorCount % REQUIRED_COLOR_GROUP_SIZE;
+			int excess = remainder == 0 ? 0 : remainder;
+			int missing = remainder == 0 ? 0 : REQUIRED_COLOR_GROUP_SIZE - remainder;
+			bool isValid = remainder == 0;
+
+			if (!isValid)
+				invalidColorCount++;
+
+			colorValidationResults.Add(new ColorValidationResult(colorType, colorCount, excess, missing, isValid));
+		}
+
+		hasColorValidationResults = true;
+		Repaint();
+	}
+
+	private void InvalidateColorValidationSummary()
+	{
+		hasColorValidationResults = false;
+		invalidColorCount = 0;
+		colorValidationResults.Clear();
+	}
+
+	private int CountCellsByColor(ColorType colorType)
+	{
+		int count = 0;
+		for (int row = 0; row < levelData.RowCount; row++)
+		{
+			for (int column = 0; column < levelData.ColumnCount; column++)
+			{
+				if (levelData.GetCellColor(row, column) == colorType)
+					count++;
+			}
+		}
+
+		return count;
+	}
 
 	private void PaintCell(int row, int column)
 	{
@@ -180,6 +318,7 @@ public class LevelEditorWindow : EditorWindow
 			return;
 
 		EditorUtility.SetDirty(levelData);
+		InvalidateColorValidationSummary();
 		Repaint();
 	}
 
@@ -204,6 +343,7 @@ public class LevelEditorWindow : EditorWindow
 		AssetDatabase.Refresh();
 
 		levelData = newLevelData;
+		InvalidateColorValidationSummary();
 		Selection.activeObject = newLevelData;
 		EditorGUIUtility.PingObject(newLevelData);
 	}
@@ -313,6 +453,26 @@ public class LevelEditorWindow : EditorWindow
 			case ColorType.None:
 			default:
 				return new Color(0.23f, 0.23f, 0.23f);
+		}
+	}
+
+	private readonly struct ColorValidationResult
+	{
+		public readonly ColorType ColorType;
+		public readonly int Count;
+		public readonly int Excess;
+		public readonly int Missing;
+		public readonly bool IsValid;
+
+		public string StatusLabel => IsValid ? "Valid" : "Needs adjustment";
+
+		public ColorValidationResult(ColorType colorType, int count, int excess, int missing, bool isValid)
+		{
+			ColorType = colorType;
+			Count = count;
+			Excess = excess;
+			Missing = missing;
+			IsValid = isValid;
 		}
 	}
 }
