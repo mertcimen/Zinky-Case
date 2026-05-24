@@ -1,5 +1,59 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3922513794784188654
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7006245058490161004}
+  - component: {fileID: 6488894805798712821}
+  m_Layer: 0
+  m_Name: Merge Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7006245058490161004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3922513794784188654}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5772685810015609396}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6488894805798712821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3922513794784188654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a2a96c2ad02445996acb7ff13424442, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  focusFoamDuration: 0.4
+  focusFoamTargetValue: 0
+  startStaggerDelay: 0.1
+  backwardDistance: 1
+  backwardMoveDuration: 0.2
+  centerAlignDuration: 0.25
+  absorbDuration: 0.2
+  focusPulseDuration: 0.15
+  focusScaleMultiplier: 1.2
+  mergeParticlePoolTag: Water
 --- !u!1 &3930341068101061373
 GameObject:
   m_ObjectHideFlags: 0
@@ -32,6 +86,7 @@ Transform:
   m_Children:
   - {fileID: 126585948254538513}
   - {fileID: 733215544443210987}
+  - {fileID: 7006245058490161004}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3210734524189124999
@@ -49,7 +104,7 @@ MonoBehaviour:
   levelDataSO: {fileID: 0}
   gridManager: {fileID: 4813542120032242482}
   ropeController: {fileID: 662244331098776655}
-  mergeController: {fileID: 0}
+  mergeController: {fileID: 6488894805798712821}
 --- !u!1001 &937828828815531877
 PrefabInstance:
   m_ObjectHideFlags: 0
